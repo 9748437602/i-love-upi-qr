@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create FREE UPI QR</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  box-sizing: border-box;
+  background: linear-gradient(-45deg, #1e63a8, #4CAF50, #ff9800, #9c27b0);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+  color: #333;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+    }
+
+    /* Header */
+    .app-header {
+      background-color: #1e63a8; /* Blue from screenshot */
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+    }
+    .header-logo .icon-briefcase { /* Using a class for the icon */
+      font-size: 2em;
+      margin-right: 15px;
+    }
+    .header-logo-text h1 {
+      font-size: 1.6em;
+      margin: 0;
+      font-weight: bold;
+    }
+    .header-logo-text p {
+      font-size: 0.85em;
+      margin: 0;
+      color: #e0e8ff; /* Lighter color for tagline */
+    }
+    .header-contact {
+      display: flex;
+      align-items: center;
+    }
+    .header-contact .icon-envelope { /* Using a class for the icon */
+      font-size: 1.2em;
+      margin-right: 8px;
+    }
+    .header-contact a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.95em;
+    }
+    .header-contact a:hover {
+      text-decoration: underline;
+    }
+
+    /* Main Content Area */
+    .main-container {
+      flex-grow: 1;
+      padding: 20px;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .main-container h2 {
+      margin: 0 0 25px 0;
+      color: #00796b; /* Teal accent */
+      font-size: 1.8em;
+      text-align: center;
+    }
+
+    .content-splitter {
+      display: flex;
+      flex-direction: column; /* Mobile first: stack columns */
+      gap: 30px; /* Gap between input section and QR section on mobile */
+    }
+
+    .input-section input[type="text"] {
+      display: block;
+      width: 100%; /* Full width of its parent column */
+      margin: 12px 0; /* Vertical margin, horizontal handled by parent or not needed */
+      padding: 12px 15px;
+      font-size: 1em;
+      border: 2px solid #00bcd4; /* Cyan border */
+      border-radius: 8px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+    .input-section input[type="text"]:focus {
+      border-color: #00796b; /* Darker teal on focus */
+      outline: none;
+    }
+
+    .qr-preview-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center QR box and icons within this column */
+    }
+    
+    .qr-box {
+      border: 8px solid #4CAF50; /* Green border */
+      padding: 20px;
+      margin: 0 auto 20px auto; /* Centered horizontally, 20px bottom margin */
+      width: 100%; /* Take full width of parent, up to max-width */
+      max-width: 360px; /* Keep defined max-width */
+      text-align: center;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+    }
+    /* Existing QR Box inner styles from original CSS */
+    .qr-header img {
+      width: 100%;
+      max-width: 240px;
+      height: auto;
+      margin-bottom: 8px;
+    }
+    .qr-header p {
+      margin: 5px 0 15px 0;
+      font-weight: bold;
+      color: #1a237e; /* Dark blue */
+      font-size: 1.1em;
+    }
+    #qrPlaceholder .placeholder-logo {
+      width: 100%;
+      max-width: 250px;
+      height: auto;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+    #qrPlaceholder p {
+        font-size: 0.95em;
+        margin: 8px 0;
+    }
+    #qrDetails {
+        text-align: center;
+    }
+    #qrDetails p {
+        font-size: 0.9em;
+        margin: 8px 0;
+        word-wrap: break-word;
+    }
+    #qrDetails p b {
+        color: #00796b;
+    }
+    #qrCanvasActive {
+      max-width: 100%;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      display: block; 
+      margin-left: auto; 
+      margin-right: auto;
+    }
+    .qr-footer {
+      margin-top: 20px;
+      border-top: 1px dashed #ccc;
+      padding-top: 15px;
+    }
+    .qr-footer .apps {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .qr-footer .apps img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .qr-footer .timestamp {
+      font-size: 0.75em;
+      color: #555;
+    }
+    .qr-footer .brand {
+      font-size: 0.7em;
+      font-weight: bold;
+      margin-top: 5px;
+      color: #004d40;
+      word-break: break-all;
+    }
+
+    .icons {
+      margin-top: 0; /* Adjusted from 25px as it's directly under qr-box in its column */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .icons img {
+      width: 45px;
+      height: 45px;
+      margin: 5px 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease-out;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    .icons img:hover {
+      transform: scale(1.15);
+    }
+
+    /* Desktop / Landscape Media Query */
+    @media (min-width: 992px) {
+      .content-splitter {
+        flex-direction: row; /* Side-by-side */
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 40px; /* Gap between columns on desktop */
+      }
+      .input-section {
+        flex: 1 1 40%; /* Adjust flex basis as needed */
+        max-width: 450px; /* Limit width of input section */
+      }
+      .qr-preview-section {
+        flex: 1 1 55%; /* Adjust flex basis */
+        /* align-items: center; /* Already set in base style */
+      }
+      /* .qr-box rule previously here for margin-left/right: auto is now handled by base style */
+       .icons {
+          /* Ensure icons are also centered if needed, or take full width of their area */
+          justify-content: center; 
+       }
+    }
+
+    /* Footer */
+    .app-footer {
+      background-color: #343a40; /* Dark charcoal from screenshot */
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .social-icons a {
+      color: white;
+      margin: 0 12px;
+      font-size: 1.6em;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    .social-icons a:hover {
+      color: #00bcd4; /* Accent color on hover */
+    }
+    .footer-copyright {
+      margin-top: 15px;
+      font-size: 0.9em;
+      color: #adb5bd; /* Lighter gray for copyright */
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-logo">
+    <i class="fas fa-briefcase icon-briefcase"></i>
+    <div class="header-logo-text">
+      <h1>UPI QR GENERATOR            </h1>
+      <p>Your Trusted Digital Partner</p>
+    </div>
+  </div>
+  <div class="header-contact">
+    <!-- WhatsApp Chat Button -->
+<a href="https://wa.me/9748437602" class="whatsapp-button" target="_blank">
+  <img src="https://img.icons8.com/ios-filled/50/ffffff/whatsapp.png" alt="Chat on WhatsApp" />
+</a>
+
+  </div>
+</header>
+
+<div class="main-container">
+  <h2>Create & Share UPI QR Code (FREE)</h2>
+
+  <div class="content-splitter">
+    <div class="input-section">
+      <input type="text" id="upi" placeholder="Enter UPI ID (e.g., name@okhdfcbank)" oninput="generateQR()" aria-label="UPI ID">
+      <input type="text" id="amount" placeholder="Amount (Optional, e.g., 100.50)" oninput="validateAmount(this); generateQR();" aria-label="Amount">
+      <input type="text" id="note" placeholder="Transaction Note (Optional, e.g., Payment for goods)" oninput="generateQR()" aria-label="Transaction Note">
+    </div>
+
+    <div class="qr-preview-section">
+      <div class="qr-box" id="qrBox">
+        <div class="qr-header">
+          <img src="Images/BHIM UPI LOGO.png" alt="BHIM UPI Logo">
+          <p>Scan & Pay Using Any UPI App</p>
+        </div>
+        <div id="qrPlaceholder">
+          <canvas id="qrCanvas" style="display:none;"></canvas>
+          <p style="color: #d32f2f; font-weight: bold;">Enter UPI ID To Generate QR Code</p>
+          <img src="Images/Arif Placeholder Logo.jpg" alt="Arif Placeholder Logo" class="placeholder-logo">
+          <p>Your QR Code will appear here</p>
+          <p><b>Arif Digital Services</b></p>
+        </div>
+        <div id="qrDetails" style="display:none;">
+          <canvas id="qrCanvasActive"></canvas>
+          <p><b>UPI ID:</b> <span id="upiShow"></span></p>
+          <p id="amtLine" style="display:none;"><b>Amount:</b> ₹<span id="amtShow"></span></p>
+          <p id="noteLine" style="display:none;"><b>Transaction Note:</b> <span id="noteShow"></span></p>
+        </div>
+        <div class="qr-footer" id="qrFooter" style="display:none;">
+          <div class="apps">
+            <img src="Images/BHIM Rounded Logo.png" alt="Bhim App Logo" title="BHIM">
+            <img src="Images/Paytm Rounded Logo.png" alt="Paytm App Logo" title="Paytm">
+            <img src="Images/GPay Rounded Logo.png" alt="Google Pay App Logo" title="Google Pay">
+            <img src="Images/PhonePe Rounded Logo.png" alt="PhonePe App Logo" title="PhonePe">
+            <img src="Images/Amazon Pay Rounded Logo.png" alt="Amazon Pay App Logo" title="Amazon Pay">
+          </div>
+          <div class="timestamp" id="qrTimestamp"></div>
+          <div class="brand">Arif Digital Services</div>
+        </div>
+      </div>
+      <div class="icons">
+        <img src="Images/Download Icon Rounded Logo.png" title="Download QR Code" alt="Download QR Code" onclick="downloadQR(this)">
+        <img src="Images/WhatsApp Rounded Logo.png" title="Share on WhatsApp" alt="Share on WhatsApp" onclick="shareQRImage('whatsapp', this)">
+        <img src="Images/Share Icon Rounded Logo.png" title="Share QR Code" alt="Share QR Code" onclick="shareQRImage('generic', this)">
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="app-footer">
+  <div class="social-icons">
+    <a href="https://www.facebook.com/share/14DyjrZ1qHW/" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+    <a href="https://youtube.com/@rearpe.services?si=qgB07TvXQPdnC6-R" aria-label="Toutube"><i class="fab fa-youtube"></i></a>
+    <a href="https://www.instagram.com/itz_arif_602?igsh=M2ZuMzE2NTF5anRi&utm_source=ig_contact_invite" aria-label="instagram"><i class="fab fa-instagram"></i></a>
+    <a href=""><i class="fa-brands fa-google-pay"></i></a>
+  </div>
+  <p class="footer-copyright">&copy; 2025 Arif Digital Services. All Rights Reserved.</p>
+</footer>
+
+<script>
+  const qrInstance = new QRious({
+    element: document.getElementById('qrCanvasActive'),
+    size: 220,
+    level: 'H',
+    padding: 10,
+    foreground: '#000000',
+    background: '#FFFFFF',
+  });
+
+  function validateAmount(input) {
+    let val = input.value.replace(/[^0-9.]/g, '');
+    const parts = val.split('.');
+    if (parts.length > 2) {
+        val = parts[0] + '.' + parts.slice(1).join('');
+    }
+    if (parts[1] && parts[1].length > 2) {
+        parts[1] = parts[1].slice(0, 2);
+        val = parts.join('.');
+    }
+    input.value = val;
+  }
+
+  function generateQR() {
+    const upi = document.getElementById('upi').value.trim();
+    const amt = document.getElementById('amount').value.trim();
+    const note = document.getElementById('note').value.trim();
+
+    const qrPlaceholder = document.getElementById('qrPlaceholder');
+    const qrDetails = document.getElementById('qrDetails');
+    const qrFooter = document.getElementById('qrFooter');
+    const qrCanvasActive = document.getElementById('qrCanvasActive');
+
+    if (!upi) {
+      qrDetails.style.display = "none";
+      qrFooter.style.display = "none";
+      qrPlaceholder.style.display = "block";
+      if (qrCanvasActive) qrCanvasActive.style.display = 'none';
+      return;
+    }
+    if (qrCanvasActive) qrCanvasActive.style.display = 'block';
+
+    let upiUrl = `upi://pay?pa=${encodeURIComponent(upi)}`;
+    if (amt) upiUrl += `&am=${parseFloat(amt).toFixed(2)}`;
+    if (note) upiUrl += `&tn=${encodeURIComponent(note)}`;
+    upiUrl += `&cu=INR`;
+
+    qrInstance.set({ value: upiUrl });
+
+    qrPlaceholder.style.display = "none";
+    qrDetails.style.display = "block";
+    qrFooter.style.display = "block";
+    document.getElementById('upiShow').textContent = upi;
+
+    const amtLine = document.getElementById('amtLine');
+    if (amt) {
+      amtLine.style.display = "block";
+      document.getElementById('amtShow').textContent = parseFloat(amt).toFixed(2);
+    } else {
+      amtLine.style.display = "none";
+    }
+
+    const noteLine = document.getElementById('noteLine');
+    if (note) {
+      noteLine.style.display = "block";
+      document.getElementById('noteShow').textContent = note;
+    } else {
+      noteLine.style.display = "none";
+    }
+
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+    const dateString = now.toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric'
+    }).replace(/ /g, '-');
+    document.getElementById('qrTimestamp').textContent = `QR Generated On : ${timeString}, ${dateString}`;
+  }
+
+  async function convertImagesToDataURLs(element) {
+    console.log("convertImagesToDataURLs: Processing images within", element);
+    const images = Array.from(element.getElementsByTagName('img'));
+    if (images.length === 0) {
+        console.log("convertImagesToDataURLs: No images found.");
+        return; 
+    }
+
+    const promises = images.map(img => {
+        if (img.src.startsWith('data:') || img.src.startsWith('blob:')) {
+            console.log("convertImagesToDataURLs: Image already a data/blob URL:", img.src.substring(0,60) + "...");
+            return Promise.resolve();
+        }
+
+        const originalSrc = img.src;
+        console.log("convertImagesToDataURLs: Attempting to convert:", originalSrc);
+        
+        // Skip Font Awesome icons (if they were <img> tags, which they are not here)
+        if (img.classList && (img.classList.contains('fas') || img.classList.contains('fab'))) {
+            return Promise.resolve();
+        }
+
+        return fetch(originalSrc)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} for ${originalSrc}`);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        console.log("convertImagesToDataURLs: Successfully converted to data URL:", originalSrc.substring(0,60) + "...");
+                        img.src = reader.result;
+                        resolve();
+                    };
+                    reader.onerror = (error) => {
+                        console.error("convertImagesToDataURLs: FileReader error for:", originalSrc, error);
+                        reject(new Error("FileReader error for " + originalSrc));
+                    };
+                    reader.readAsDataURL(blob);
+                });
+            })
+            .catch(error => {
+                console.warn(`convertImagesToDataURLs: Failed to fetch and convert image ${originalSrc}. Error: ${error}. Leaving original src.`);
+                // For local "Images/" paths, fetch might fail if running directly from file system.
+                // This function is primarily for external images or ensuring all are embedded for html2canvas.
+                // If local images are intended to work, they should be accessible via HTTP or relative paths correctly resolved.
+                return Promise.resolve();
+            });
+    });
+
+    console.log(`convertImagesToDataURLs: Waiting for ${promises.length} image conversion(s)...`);
+    try {
+        await Promise.all(promises);
+        console.log("convertImagesToDataURLs: All image conversions processed.");
+    } catch (error) {
+        console.error("convertImagesToDataURLs: Error occurred during Promise.all.", error);
+    }
+  }
+
+
+  function getShareDetailsText() {
+    const upi = document.getElementById('upi').value.trim();
+    const amt = document.getElementById('amount').value.trim();
+    const note = document.getElementById('note').value.trim();
+    let text = `UPI Payment Details:\nUPI ID: ${upi}`;
+    if (amt) text += `\nAmount: ₹${parseFloat(amt).toFixed(2)}`;
+    if (note) text += `\nNote: ${note}`;
+    text += `\n\nScan the QR to pay or use the details above.`;
+    text += `\nGenerated via QR by Arif Digital Services`;
+    return text;
+  }
+
+  async function downloadQR(buttonElement) {
+    const originalTitle = buttonElement ? buttonElement.title : "Download QR Code";
+    if (buttonElement) {
+        buttonElement.title = "Processing...";
+        buttonElement.style.opacity = "0.7";
+    }
+    console.log("Download QR: Initiated");
+    const qrBoxElement = document.getElementById('qrBox');
+    if (!qrBoxElement) {
+        console.error("Download QR: qrBox element not found!");
+        alert("Error: QR Code element not found.");
+        if (buttonElement) {
+            buttonElement.title = originalTitle;
+            buttonElement.style.opacity = "1";
+        }
+        return;
+    }
+
+    try {
+        await convertImagesToDataURLs(qrBoxElement); 
+        console.log("Download QR: Image sources updated, proceeding with html2canvas.");
+        const canvas = await html2canvas(qrBoxElement, {
+            logging: true,
+            scale: 2,
+            backgroundColor: '#ffffff', // Explicitly set background
+            useCORS: true // Important for external images if any were loaded
+        });
+        console.log("Download QR: html2canvas successful.");
+        const upiId = document.getElementById('upi').value.trim().split('@')[0] || 'UPI-QR';
+        const fileName = `${upiId}_BDL_ARIF_GOLDAR_QR.png`;
+
+        const dataURL = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = dataURL;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        console.log("Download QR: Download initiated.");
+        if (buttonElement) buttonElement.title = "Downloaded!";
+
+    } catch (error) {
+        console.error("Download QR: Error during canvas generation or download:", error);
+        alert("Sorry, an error occurred while preparing the download. Check console for details.");
+        if (buttonElement) buttonElement.title = originalTitle; 
+    } finally {
+        if (buttonElement) {
+            if (buttonElement.title === "Downloaded!") {
+                setTimeout(() => {
+                    buttonElement.title = originalTitle;
+                    buttonElement.style.opacity = "1";
+                }, 2000);
+            } else {
+                 buttonElement.style.opacity = "1"; 
+            }
+        }
+    }
+  }
+
+  async function shareQRImage(method, buttonElement) {
+    const originalTitle = buttonElement ? buttonElement.title : "Share";
+    if (buttonElement) {
+        buttonElement.title = "Processing...";
+        buttonElement.style.opacity = "0.7";
+    }
+    console.log(`Share QR: Initiated with method - ${method}`);
+
+    if (!document.getElementById('upi').value.trim()) {
+        alert("Please generate a QR code first by entering a UPI ID.");
+        if (buttonElement) {
+            buttonElement.title = originalTitle;
+            buttonElement.style.opacity = "1";
+        }
+        return;
+    }
+
+    const qrBoxElement = document.getElementById('qrBox');
+    if (!qrBoxElement) {
+        console.error("Share QR: qrBox element not found!");
+        alert("Error: QR Code element not found for sharing.");
+        if (buttonElement) {
+            buttonElement.title = originalTitle;
+            buttonElement.style.opacity = "1";
+        }
+        return;
+    }
+
+    const shareText = getShareDetailsText();
+    const upiId = document.getElementById('upi').value.trim().split('@')[0] || 'UPI-QR';
+    const fileName = `${upiId}_Bdl-Arif-Goldar_QR.png`;
+    let finalButtonMessage = originalTitle; 
+
+    try {
+        await convertImagesToDataURLs(qrBoxElement);
+        console.log("Share QR: Image sources updated, proceeding with html2canvas.");
+        const canvas = await html2canvas(qrBoxElement, {
+            logging: true,
+            scale: 2,
+            backgroundColor: '#ffffff',
+            useCORS: true
+        });
+        console.log("Share QR: html2canvas successful.");
+
+        await new Promise((resolve, reject) => {
+            canvas.toBlob(async function(blob) {
+                if (!blob) {
+                    console.error("Share QR: Failed to create blob from canvas.");
+                    alert("Error generating image for sharing. Blob creation failed.");
+                    finalButtonMessage = originalTitle;
+                    reject(new Error("Blob creation failed")); 
+                    return;
+                }
+
+                const shareData = {
+                    files: [new File([blob], fileName, { type: 'image/png' })],
+                    title: 'UPI QR Code',
+                    text: shareText,
+                };
+
+                try {
+                    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                        console.log(`Share QR: Attempting Web Share API for method: ${method}.`);
+                        await navigator.share(shareData);
+                        console.log("Share QR: Successfully shared via Web Share API.");
+                        finalButtonMessage = "Shared!";
+                    } else {
+                        console.log("Share QR: Web Share API not available or cannot share data.");
+                        if (method === 'whatsapp') {
+                            const whatsappTextMessage = shareText + "\n\n(To include the QR image, please download it and attach it manually to your WhatsApp message.)";
+                            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappTextMessage)}`;
+                            window.open(whatsappUrl, '_blank');
+                            finalButtonMessage = "Opened WhatsApp";
+                        } else { 
+                            alert("Sharing directly is not supported by your browser. Try downloading the image and sharing it manually.");
+                            finalButtonMessage = originalTitle;
+                        }
+                    }
+                } catch (err) { 
+                    console.error('Share QR: Error during sharing (navigator.share):', err);
+                    if (err.name === 'AbortError') {
+                        finalButtonMessage = originalTitle; 
+                    } else {
+                        if (method === 'whatsapp') {
+                            console.log("Share QR: Web Share API failed for WhatsApp, falling back to text share.");
+                            const whatsappTextMessage = shareText + "\n\n(Web Share failed. To include the QR image, please download it and attach it manually to your WhatsApp message.)";
+                            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappTextMessage)}`;
+                            window.open(whatsappUrl, '_blank');
+                            finalButtonMessage = "Opened WhatsApp";
+                        } else { 
+                            alert(`Sharing failed: ${err.message}. Try downloading and sharing manually.`);
+                            finalButtonMessage = originalTitle;
+                        }
+                    }
+                }
+                resolve(); 
+            }, 'image/png');
+        }); 
+
+    } catch (error) { 
+        console.error("Share QR: Error in main try block (image gen/conversion/blob):", error);
+        alert("Error generating image for sharing. Please try downloading first. Check console for details.");
+        finalButtonMessage = originalTitle; 
+    } finally {
+        if (buttonElement) {
+            buttonElement.title = finalButtonMessage; 
+            buttonElement.style.opacity = "1";     
+
+            if (finalButtonMessage === "Shared!" || finalButtonMessage === "Opened WhatsApp") {
+                setTimeout(() => {
+                    if(buttonElement.title === finalButtonMessage) { 
+                       buttonElement.title = originalTitle;
+                    }
+                }, 3000);
+            }
+        }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    generateQR();
+  });
+</script>
+
+</body>
+</html>
